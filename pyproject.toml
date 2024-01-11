@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hid_ups"
+version = "0.2.0"
+authors = [
+  { name="Desultory", email="dev@pyl.onl" },
+]
+description = "A Python library for interacting with USB HID UPS devices."
+readme = "readme.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: OS Independent",
+]
+dependencies = ["zenlib >= 1.6.1"]
+
+[project.scripts]
+hid_ups = "hid_ups.main:main"
+
+[project.urls]
+Homepage = "https://github.com/desultory/hid_ups"
+Issues = "https://github.com/desultory/pycpio/hid_ups"
