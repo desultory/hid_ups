@@ -12,7 +12,7 @@ Uses [zenlib](https://github.com/desultory/zenlib) and [hidapi](https://github.c
 
 This must be run as root unless the user has privileges to use the `hidraw` socket the UPS uses.
 
-This package can be installed with `sudo pip install --break .` then run wiht `sudo hid_ups`.
+This package can be installed with `sudo pip install --break .` then run with `sudo hid_ups`.
 
 ## Device detection
 
