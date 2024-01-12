@@ -39,11 +39,11 @@ class HIDUPS(ClassLogger):
                 if data := self._read_data(64):
                     self.process_data(data)
             except OSError as e:
+                self.ups.close()
                 self.logger.error("Error reading data: %s", e)
                 if not self.loop_thread.loop.is_set():
                     break
-                else:
-                    self._update_device()
+                self._update_device()
         self.current_item = 0
         self.logger.info(self)
 
