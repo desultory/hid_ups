@@ -24,9 +24,11 @@ class HIDUPS(ClassLogger):
         for param in self.PARAMS:
             setattr(self, param, kwargs.pop(param, None))
 
-        ups = device()
-        ups.open_path(self.device['path'])
-        self.ups = ups
+        self.ups = device()
+
+    def _open_device(self):
+        """ Open the device """
+        self.ups.open_path(self.device['path'])
 
     def start(self):
         """ Start the UPS """
@@ -39,7 +41,6 @@ class HIDUPS(ClassLogger):
                 if data := self._read_data(64):
                     self.process_data(data)
             except OSError as e:
-                self.ups.close()
                 self.logger.error("Error reading data: %s", e)
                 if not self.loop_thread.loop.is_set():
                     break
@@ -51,7 +52,9 @@ class HIDUPS(ClassLogger):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
         if path := get_hid_path_from_serial(self.device['serial_number']):
+            self.ups.close()
             self.device['path'] = path
+            self._open_device()
         else:
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
 
