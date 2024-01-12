@@ -57,7 +57,9 @@ class HIDUPS(ClassLogger):
             self.device['path'] = path
             self._open_device()
         else:
+            from time import sleep
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
+            sleep(5)
 
     def _read_data(self, length):
         """ Read a block of data from the UPS """
