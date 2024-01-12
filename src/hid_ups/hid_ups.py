@@ -20,14 +20,16 @@ class HIDUPS(ClassLogger):
         self.loop_thread = ZenThread(target=self.read_and_process_data, looping=True, logger=self.logger)
         self.current_item = 0
         self.device = device_data
+        self.ups = device()
 
         for param in self.PARAMS:
             setattr(self, param, kwargs.pop(param, None))
 
-        self.ups = device()
+        self._open_device()
 
     def _open_device(self):
         """ Open the device """
+        self.ups.close()
         self.ups.open_path(self.device['path'])
 
     def start(self):
@@ -52,7 +54,6 @@ class HIDUPS(ClassLogger):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
         if path := get_hid_path_from_serial(self.device['serial_number']):
-            self.ups.close()
             self.device['path'] = path
             self._open_device()
         else:
