@@ -39,11 +39,21 @@ class HIDUPS(ClassLogger):
                 if data := self._read_data(64):
                     self.process_data(data)
             except OSError as e:
-                from time import sleep
                 self.logger.error("Error reading data: %s", e)
-                sleep(1)
+                if not self.loop_thread.loop.is_set():
+                    break
+                else:
+                    self._update_device()
         self.current_item = 0
         self.logger.info(self)
+
+    def _update_device(self):
+        """ Updates the device path based on the serial """
+        from .hid_devices import get_hid_path_from_serial
+        if path := get_hid_path_from_serial(self.device['serial_number']):
+            self.device['path'] = path
+        else:
+            self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
 
     def _read_data(self, length):
         """ Read a block of data from the UPS """

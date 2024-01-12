@@ -14,6 +14,10 @@ def main():
 
     ups_list = [dev for dev in HIDUPS.get_UPSs(logger=logger)]
 
+    if not ups_list:
+        logger.error('No UPS found')
+        return
+
     def shutdown(signum, frame):
         logger.warning('Shutting down on signal %d', signum)
         for ups in ups_list:
