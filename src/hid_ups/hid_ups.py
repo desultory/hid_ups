@@ -35,8 +35,13 @@ class HIDUPS(ClassLogger):
     def read_and_process_data(self):
         """ Read data from the UPS and process it """
         while self.current_item < self.BATCH_SIZE:
-            if data := self._read_data(64):
-                self.process_data(data)
+            try:
+                if data := self._read_data(64):
+                    self.process_data(data)
+            except OSError as e:
+                from time import sleep
+                self.logger.error("Error reading data: %s", e)
+                sleep(1)
         self.current_item = 0
         self.logger.info(self)
 
