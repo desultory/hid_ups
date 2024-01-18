@@ -1,4 +1,5 @@
 from zenlib.logging import ClassLogger
+from threading import Event
 
 
 class HIDUPS(ClassLogger):
@@ -18,6 +19,7 @@ class HIDUPS(ClassLogger):
         self.current_item = 0
         self.device = device_data
         self.ups = device()
+        self.running = Event()
 
         for param in self.PARAMS:
             setattr(self, param, kwargs.pop(param, None))
@@ -29,10 +31,16 @@ class HIDUPS(ClassLogger):
         self.ups.close()
         self.ups.open_path(self.device['path'])
 
+    def close(self):
+        """ Close the device """
+        self.running.clear()
+        self.ups.close()
+
     async def mainloop(self):
         """ Main loop """
+        self.running.set()
         self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
-        while True:
+        while self.running.is_set():
             await self.read_and_process_data()
 
     async def read_and_process_data(self):
