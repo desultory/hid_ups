@@ -22,7 +22,7 @@ def main():
 
     mainloop = get_event_loop()
     for ups in ups_list:
-        mainloop.run_until_complete(ups.mainloop())
+        mainloop.create_task(ups.mainloop())
 
 
 if '__main__' == __name__:
