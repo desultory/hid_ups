@@ -2,11 +2,7 @@
 
 from hid_ups import HIDUPS
 from zenlib.util import init_logger, init_argparser, process_args
-from asyncio import run, gather, get_event_loop
-
-
-async def run_loops(loops):
-    await gather(*loops)
+from asyncio import gather, get_event_loop
 
 
 def main():
@@ -21,8 +17,8 @@ def main():
         return
 
     mainloop = get_event_loop()
-    for ups in ups_list:
-        mainloop.create_task(ups.mainloop())
+    tasks = [mainloop.create_task(ups.mainloop()) for ups in ups_list]
+    mainloop.run_until_complete(gather(*tasks))
 
 
 if '__main__' == __name__:
