@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hid_ups"
-version = "0.3.0"
+version = "0.4.1"
 authors = [
   { name="Desultory", email="dev@pyl.onl" },
 ]
@@ -16,7 +16,7 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Operating System :: OS Independent",
 ]
-dependencies = ["zenlib >= 1.6.1"]
+dependencies = ["zenlib >= 1.6.5"]
 
 [project.scripts]
 hid_ups = "hid_ups.main:main"

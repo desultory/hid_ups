@@ -1,10 +1,8 @@
 #! /usr/bin/env python3
 
 from hid_ups import HIDUPS
-
 from zenlib.util import init_logger, init_argparser, process_args
-
-from signal import signal, SIGINT
+from asyncio import run
 
 
 def main():
@@ -18,14 +16,9 @@ def main():
         logger.error('No UPS found')
         return
 
-    def shutdown(signum, frame):
-        logger.warning('Shutting down on signal %d', signum)
-        for ups in ups_list:
-            ups.loop_thread.loop.clear()
+    loops = [ups.mainloop() for ups in ups_list]
 
-    signal(SIGINT, shutdown)
-    for ups in ups_list:
-        ups.loop_thread.start()
+    run(*loops)
 
 
 if '__main__' == __name__:

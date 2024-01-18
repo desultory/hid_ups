@@ -1,6 +1,4 @@
-
 from zenlib.logging import ClassLogger
-from zenlib.threading import ZenThread
 
 
 class HIDUPS(ClassLogger):
@@ -17,7 +15,6 @@ class HIDUPS(ClassLogger):
     def __init__(self, device_data, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from hid import device
-        self.loop_thread = ZenThread(target=self.read_and_process_data, looping=True, logger=self.logger)
         self.current_item = 0
         self.device = device_data
         self.ups = device()
@@ -25,44 +22,44 @@ class HIDUPS(ClassLogger):
         for param in self.PARAMS:
             setattr(self, param, kwargs.pop(param, None))
 
-        self._open_device()
+        self.open_device()
 
-    def _open_device(self):
+    def open_device(self):
         """ Open the device """
         self.ups.close()
         self.ups.open_path(self.device['path'])
 
-    def start(self):
-        """ Start the UPS """
-        self.loop_thread.start()
+    async def mainloop(self):
+        """ Main loop """
+        self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
+        while True:
+            await self.read_and_process_data()
 
-    def read_and_process_data(self):
+    async def read_and_process_data(self):
         """ Read data from the UPS and process it """
         while self.current_item < self.BATCH_SIZE:
             try:
-                if data := self._read_data(64):
+                if data := await self.read_data(64):
                     self.process_data(data)
             except OSError as e:
                 self.logger.error("[%s] Error reading data: %s" % (self.device['serial_number'], e))
-                if not self.loop_thread.loop.is_set():
-                    break
-                self._update_device()
+                self.update_device()
         self.current_item = 0
         self.logger.info(self)
 
-    def _update_device(self):
+    def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
         if path := get_hid_path_from_serial(self.device['serial_number']):
             self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
             self.device['path'] = path
-            self._open_device()
+            self.open_device()
         else:
             from time import sleep
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
             sleep(5)
 
-    def _read_data(self, length):
+    async def read_data(self, length):
         """ Read a block of data from the UPS """
         if data := self.ups.read(length):
             self.logger.debug("Read %s bytes: %s", length, data)
