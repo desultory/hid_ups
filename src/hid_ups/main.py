@@ -2,7 +2,7 @@
 
 from hid_ups import HIDUPS
 from zenlib.util import init_logger, init_argparser, process_args
-from asyncio import run, gather
+from asyncio import run, gather, get_event_loop
 
 
 async def run_loops(loops):
@@ -20,9 +20,9 @@ def main():
         logger.error('No UPS found')
         return
 
-    loops = [ups.mainloop() for ups in ups_list]
-
-    run(run_loops(loops))
+    mainloop = get_event_loop()
+    for ups in ups_list:
+        mainloop.run_until_complete(ups.mainloop())
 
 
 if '__main__' == __name__:
