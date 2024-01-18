@@ -2,7 +2,7 @@
 
 from hid_ups import HIDUPS
 from zenlib.util import init_logger, init_argparser, process_args
-from asyncio import gather, get_event_loop, run
+from asyncio import gather, get_event_loop
 
 
 def main():
