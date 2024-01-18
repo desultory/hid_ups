@@ -20,11 +20,10 @@ def main():
     tasks = [mainloop.create_task(ups.mainloop()) for ups in ups_list]
 
     try:
-        mainloop.run_forever()
+        mainloop.run_until_complete(gather(*tasks))
     except KeyboardInterrupt:
         for task in tasks:
             task.cancel()
-        run(gather(*tasks, return_exceptions=True))
     finally:
         mainloop.close()
         logger.info('Main loop closed')
