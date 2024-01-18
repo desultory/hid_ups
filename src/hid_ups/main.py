@@ -18,7 +18,7 @@ def main():
 
     loops = [ups.mainloop() for ups in ups_list]
 
-    gather(run(*loops))
+    run(gather(*loops))
 
 
 if '__main__' == __name__:
