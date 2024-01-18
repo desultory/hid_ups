@@ -2,7 +2,7 @@
 
 from hid_ups import HIDUPS
 from zenlib.util import init_logger, init_argparser, process_args
-from asyncio import run
+from asyncio import run, gather
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
 
     loops = [ups.mainloop() for ups in ups_list]
 
-    run(*loops)
+    gather(run(*loops))
 
 
 if '__main__' == __name__:
