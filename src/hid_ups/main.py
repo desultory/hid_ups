@@ -2,7 +2,7 @@
 
 from hid_ups import HIDUPS
 from zenlib.util import init_logger, init_argparser, process_args
-from asyncio import gather, get_event_loop
+from asyncio import gather, get_event_loop, run
 
 
 def main():
@@ -18,7 +18,16 @@ def main():
 
     mainloop = get_event_loop()
     tasks = [mainloop.create_task(ups.mainloop()) for ups in ups_list]
-    mainloop.run_until_complete(gather(*tasks))
+
+    try:
+        mainloop.run_forever()
+    except KeyboardInterrupt:
+        for task in tasks:
+            task.cancel()
+        run(gather(*tasks, return_exceptions=True))
+    finally:
+        mainloop.close()
+        logger.info('Main loop closed')
 
 
 if '__main__' == __name__:
