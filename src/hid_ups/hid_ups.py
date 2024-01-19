@@ -67,7 +67,7 @@ class HIDUPS(ClassLogger):
                     self.running.clear()
                     del self.ups
                 self.fail_count += 1
-                self.logger.debug("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
+                self.logger.info("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
                 self._clear_data()
                 sleep(5)
                 self.update_device()
