@@ -84,7 +84,7 @@ class HIDUPS(ClassLogger):
             self.ups.open_path(self.device['path'])
             self.logger.info("[%s] Opened device." % self.device['serial_number'])
         except (OSError, RuntimeError) as e:
-            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e), exc_traceback=True)
+            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e), exc_info=True)
             return
         self.logger.log(5, "[%s] Reading %s bytes." % (self.device['serial_number'], length))
         try:
