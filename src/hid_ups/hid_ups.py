@@ -57,7 +57,8 @@ class HIDUPS(ClassLogger):
                 if data := await self.read_data(64):
                     self.process_data(data)
             except OSError as e:
-                self.logger.error("[%s] Error reading data: %s" % (self.device['serial_number'], e))
+                self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
+                sleep(5)
                 self.update_device()
         self.current_item = 0
         self.logger.info(self)
