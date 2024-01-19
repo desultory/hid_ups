@@ -57,7 +57,7 @@ class HIDUPS(ClassLogger):
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
-            except OSError as e:
+            except (OSError, ValueError) as e:
                 self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
                 sleep(5)
                 self.update_device()
@@ -91,6 +91,9 @@ class HIDUPS(ClassLogger):
         """ Read a block of data from the UPS """
         from asyncio import to_thread
         self.logger.debug("[%s] Creating thread to read data.", self.device['serial_number'])
+        data = await to_thread(self._read_data, length)
+        if data is None:
+            raise ValueError("[%s] Unable to read data." % self.device['serial_number'])
         return await to_thread(self._read_data, length)
 
     def process_data(self, data):
