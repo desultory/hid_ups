@@ -32,6 +32,7 @@ class HIDUPS(ClassLogger):
 
     def open_device(self):
         """ Open the device """
+        self.fail_count = 0
         try:
             self.ups.open_path(self.device['path'])
         except (OSError, RuntimeError) as e:
