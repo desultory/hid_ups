@@ -51,7 +51,7 @@ class HIDUPS(ClassLogger):
 
     async def read_and_process_data(self):
         """ Read data from the UPS and process it """
-        while self.current_item < self.BATCH_SIZE:
+        while self.current_item < self.BATCH_SIZE and self.running.is_set():
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
@@ -82,9 +82,6 @@ class HIDUPS(ClassLogger):
                 self.logger.log(5, "No data read before timeout.")
         except (OSError, ValueError) as e:
             self.logger.error("[%s] Error reading data: %s" % (self.device['serial_number'], e))
-            if isinstance(e, ValueError):
-                sleep(5)
-            self.update_device()
 
     async def read_data(self, length):
         """ Read a block of data from the UPS """
