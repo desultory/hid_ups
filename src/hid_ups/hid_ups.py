@@ -80,7 +80,7 @@ class HIDUPS(ClassLogger):
         self.logger.log(5, "[%s] Reading %s bytes." % (self.device['serial_number'], length))
         try:
             if data := self.ups.read(length):
-                self.logger.debug("Read %s bytes: %s", length, data)
+                self.logger.debug("[%s] Read %s bytes: %s" % (self.device['serial_number'], length, data))
                 return data
             else:
                 self.logger.log(5, "No data read before timeout.")
@@ -105,5 +105,6 @@ class HIDUPS(ClassLogger):
             raise NotImplementedError(f"Unknown data type {data[0]}")
 
         self.current_item += 1
+        self.logger.debug("[%s] Processing data: %s" % (self.device['serial_number'], data))
         return getattr(self, f"process_{data[0]}")(data)
 
