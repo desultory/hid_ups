@@ -52,6 +52,7 @@ class HIDUPS(ClassLogger):
         self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
         while self.running.is_set():
             await self.read_and_process_data()
+        self.ups.close()
 
     async def read_and_process_data(self):
         """ Read data from the UPS and process it """
@@ -66,7 +67,6 @@ class HIDUPS(ClassLogger):
                 if not self.run_forever and self.fail_count >= self.max_fails:
                     self.logger.critical("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
                     self.running.clear()
-                    del self.ups
                 self.fail_count += 1
                 self._clear_data()
                 sleep(5)
