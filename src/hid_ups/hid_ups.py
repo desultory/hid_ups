@@ -120,7 +120,7 @@ class HIDUPS(ClassLogger):
         self.logger.debug("[%s] Creating thread to read data.", self.device['serial_number'])
         data = await to_thread(self._read_data, length)
         if data is None:
-            raise ValueError("[%s] Unable to read data." % self.device['serial_number'])
+            raise ValueError("Unable to read data.")
         return data
 
     def process_data(self, data):
