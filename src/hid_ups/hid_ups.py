@@ -1,5 +1,5 @@
 from zenlib.logging import ClassLogger
-from threading import Lock
+from threading import Semaphore
 from time import sleep
 
 
@@ -22,7 +22,7 @@ class HIDUPS(ClassLogger):
         self.max_fails = max_fails
         self.run_forever = run_forever
         self.device = device_data
-        self.running = Lock()
+        self.running = Semaphore()
         self.ups = device()
 
         for param in self.PARAMS:
@@ -64,7 +64,7 @@ class HIDUPS(ClassLogger):
 
     async def read_and_process_data(self):
         """ Read data from the UPS and process it """
-        while self.current_item < self.BATCH_SIZE:
+        while self.current_item < self.BATCH_SIZE or self.running._value > 1:
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
