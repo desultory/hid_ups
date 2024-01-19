@@ -116,5 +116,5 @@ class HIDUPS(ClassLogger):
 
         self.current_item += 1
         self.logger.debug("[%s] Processing data: %s" % (self.device['serial_number'], data))
-        return getattr(self, f"process_{data[0]}")(data)
+        getattr(self, f"process_{data[0]}")(data)
 
