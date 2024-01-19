@@ -18,6 +18,7 @@ class HIDUPS(ClassLogger):
         super().__init__(*args, **kwargs)
         from hid import device
         self.current_item = 0
+        self.fail_count = 0
         self.device = device_data
         self.ups = device()
         self.running = Event()
@@ -57,8 +58,13 @@ class HIDUPS(ClassLogger):
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
+                    self.fail_count = 0
             except (OSError, ValueError) as e:
                 self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
+                if self.fail_count > 5:
+                    self.logger.error("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
+                    self.running.clear()
+                self.fail_count += 1
                 self._clear_data()
                 sleep(5)
                 self.update_device()
