@@ -88,6 +88,7 @@ class HIDUPS(ClassLogger):
     async def read_data(self, length):
         """ Read a block of data from the UPS """
         from asyncio import to_thread
+        self.logger.debug("[%s] Creating thread to read data.", self.device['serial_number'])
         return await to_thread(self._read_data, length)
 
     def process_data(self, data):
