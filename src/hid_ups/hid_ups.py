@@ -1,5 +1,6 @@
 from zenlib.logging import ClassLogger
 from threading import Event
+from time import sleep
 
 
 class HIDUPS(ClassLogger):
@@ -63,7 +64,6 @@ class HIDUPS(ClassLogger):
             self.device['path'] = path
             self.open_device()
         else:
-            from time import sleep
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
             sleep(5)
 
@@ -77,6 +77,8 @@ class HIDUPS(ClassLogger):
                 self.logger.log(5, "No data read before timeout.")
         except (OSError, ValueError) as e:
             self.logger.error("Error reading data: %s" % e)
+            if isinstance(e, ValueError):
+                sleep(5)
             self.update_device()
 
     async def read_data(self, length):
