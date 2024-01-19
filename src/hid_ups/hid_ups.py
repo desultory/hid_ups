@@ -1,5 +1,5 @@
 from zenlib.logging import ClassLogger
-from threading import Event
+from threading import Event, Lock
 from time import sleep
 
 
@@ -23,6 +23,7 @@ class HIDUPS(ClassLogger):
         self.run_forever = run_forever
         self.device = device_data
         self.running = Event()
+        self.listening = Lock()
         self.ups = device()
 
         for param in self.PARAMS:
@@ -100,7 +101,8 @@ class HIDUPS(ClassLogger):
         """ Read a block of data from the UPS """
         from asyncio import to_thread
         self.logger.debug("[%s] Creating thread to read data.", self.device['serial_number'])
-        data = await to_thread(self._read_data, length)
+        with self.listening:
+            data = await to_thread(self._read_data, length)
         if data is None:
             raise ValueError("[%s] Unable to read data." % self.device['serial_number'])
         return data
