@@ -40,7 +40,7 @@ class HIDUPS(ClassLogger):
 
         # Ensure this message is logged
         level = self.logger.level
-        if self.logger.level < 20:
+        if self.logger.level > 20:
             self.logger.setLevel(20)
         self.logger.info("[%s] Opened device." % self.device['serial_number'])
         self.logger.setLevel(level)
