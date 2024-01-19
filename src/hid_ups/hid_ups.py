@@ -58,7 +58,7 @@ class HIDUPS(ClassLogger):
         """ Main loop """
         self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
 
-        with self.running.acquire():
+        with self.running:
             while not self.running._value:
                 await self.read_and_process_data()
         self.ups.close()
