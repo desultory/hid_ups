@@ -96,7 +96,7 @@ class HIDUPS(ClassLogger):
             try:
                 self.open_device()
             except OSError as e:
-                self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e), exc_info=True)
+                self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e))
                 await sleep(2)
         else:
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
