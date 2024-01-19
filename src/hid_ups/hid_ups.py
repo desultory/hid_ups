@@ -32,8 +32,8 @@ class HIDUPS(ClassLogger):
         """ Open the device """
         from hid import device
         self.ups = device()
-        self.ups.set_nonblocking(True)
         self.ups.open_path(self.device['path'])
+        self.ups.set_nonblocking(True)
         self.logger.info("[%s] Opened device." % self.device['serial_number'])
 
     def close(self):
