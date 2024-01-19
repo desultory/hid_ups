@@ -57,15 +57,16 @@ class HIDUPS(ClassLogger):
     async def mainloop(self):
         """ Main loop """
         self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
-        with self.running:
-            while self.running._value > 1:
+
+        with self.running.acquire():
+            while not self.running._value:
                 await self.read_and_process_data()
         self.ups.close()
         self.logger.info("[%s] Main loop stopped." % self.device['serial_number'])
 
     async def read_and_process_data(self):
         """ Read data from the UPS and process it """
-        while self.current_item < self.BATCH_SIZE and self.running._value > 1:
+        while self.current_item < self.BATCH_SIZE and self.running._value == 0:
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
