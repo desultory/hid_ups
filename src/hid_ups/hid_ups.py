@@ -77,6 +77,7 @@ class HIDUPS(ClassLogger):
 
     def _read_data(self, length):
         """ Read a block of data from the UPS """
+        self.logger.log(5, "[%s] Reading %s bytes." % (self.device['serial_number'], length))
         try:
             if data := self.ups.read(length):
                 self.logger.debug("Read %s bytes: %s", length, data)
