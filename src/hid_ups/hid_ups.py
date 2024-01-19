@@ -14,11 +14,13 @@ class HIDUPS(ClassLogger):
         for data, device_type in get_hid_devices():
             yield device_type(data, *args, **kwargs)
 
-    def __init__(self, device_data, *args, **kwargs):
+    def __init__(self, device_data, run_forever=False, max_fails=5, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from hid import device
         self.current_item = 0
         self.fail_count = 0
+        self.max_fails = max_fails
+        self.run_forever = run_forever
         self.device = device_data
         self.ups = device()
         self.running = Event()
@@ -61,10 +63,11 @@ class HIDUPS(ClassLogger):
                     self.fail_count = 0
             except (OSError, ValueError) as e:
                 self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
-                if self.fail_count > 5:
-                    self.logger.error("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
+                if not self.run_forever and self.fail_count > self.max_fails:
+                    self.logger.critical("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
                     self.running.clear()
                 self.fail_count += 1
+                self.logger.debug("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
                 self._clear_data()
                 sleep(5)
                 self.update_device()
