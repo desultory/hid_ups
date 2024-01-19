@@ -39,6 +39,7 @@ class HIDUPS(ClassLogger):
 
     def close(self):
         """ Close the device """
+        self.logger.info("[%s] Closing device." % self.device['serial_number'])
         self.running.clear()
         self.ups.close()
 
