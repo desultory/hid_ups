@@ -1,5 +1,5 @@
 from zenlib.logging import ClassLogger
-from threading import Event
+from threading import Lock
 from time import sleep
 
 
@@ -22,7 +22,7 @@ class HIDUPS(ClassLogger):
         self.max_fails = max_fails
         self.run_forever = run_forever
         self.device = device_data
-        self.running = Event()
+        self.running = Lock()
         self.ups = device()
 
         for param in self.PARAMS:
@@ -44,8 +44,10 @@ class HIDUPS(ClassLogger):
 
     def close(self):
         """ Close the device """
-        self.logger.info("[%s] Closing device." % self.device['serial_number'])
-        self.running.clear()
+        self.running.release()
+        with self.running:
+            self.ups.close()
+            self.logger.info("[%s] Closed device." % self.device['serial_number'])
 
     def _clear_data(self):
         self.logger.debug("[%s] Clearing data." % self.device['serial_number'])
@@ -54,16 +56,15 @@ class HIDUPS(ClassLogger):
 
     async def mainloop(self):
         """ Main loop """
-        self.running.set()
         self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
-        while self.running.is_set():
+        with self.running:
             await self.read_and_process_data()
         self.ups.close()
         self.logger.info("[%s] Main loop stopped." % self.device['serial_number'])
 
     async def read_and_process_data(self):
         """ Read data from the UPS and process it """
-        while self.current_item < self.BATCH_SIZE and self.running.is_set():
+        while self.current_item < self.BATCH_SIZE:
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
@@ -73,7 +74,7 @@ class HIDUPS(ClassLogger):
                 self.logger.info("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
                 if not self.run_forever and self.fail_count >= self.max_fails:
                     self.logger.critical("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
-                    self.running.clear()
+                    self.running.release()
                 self.fail_count += 1
                 self._clear_data()
                 sleep(5)
