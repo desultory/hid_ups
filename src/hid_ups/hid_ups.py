@@ -1,5 +1,5 @@
 from zenlib.logging import ClassLogger
-from threading import Event, Lock
+from threading import Event
 from time import sleep
 
 
@@ -23,17 +23,26 @@ class HIDUPS(ClassLogger):
         self.run_forever = run_forever
         self.device = device_data
         self.running = Event()
-        self.listening = Lock()
         self.ups = device()
 
         for param in self.PARAMS:
             setattr(self, param, kwargs.pop(param, None))
 
+        self.open_device()
+
+    def open_device(self):
+        """ Open the device """
+        try:
+            self.ups.open_path(self.device['path'])
+        except (OSError, RuntimeError) as e:
+            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e))
+
+        self.logger.info("[%s] Opened device." % self.device['serial_number'])
+
     def close(self):
         """ Close the device """
-        self.logger.info("[%s] Closing device and ending runloop." % self.device['serial_number'])
+        self.logger.info("[%s] Closing device." % self.device['serial_number'])
         self.running.clear()
-        self.ups.close()
 
     def _clear_data(self):
         self.logger.debug("[%s] Clearing data." % self.device['serial_number'])
@@ -71,21 +80,19 @@ class HIDUPS(ClassLogger):
     def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
+        if hasattr(self, 'ups'):
+            self.logger.info("[%s] Closing device." % self.device['serial_number'])
+            self.ups.close()
         if path := get_hid_path_from_serial(self.device['serial_number']):
             self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
             self.device['path'] = path
+            self.open_device()
         else:
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
             sleep(5)
 
     def _read_data(self, length):
         """ Read a block of data from the UPS """
-        try:
-            self.ups.open_path(self.device['path'])
-            self.logger.info("[%s] Opened device." % self.device['serial_number'])
-        except (OSError, RuntimeError) as e:
-            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e), exc_info=True)
-            return
         self.logger.log(5, "[%s] Reading %s bytes." % (self.device['serial_number'], length))
         try:
             if data := self.ups.read(length):
@@ -95,14 +102,12 @@ class HIDUPS(ClassLogger):
                 self.logger.log(5, "No data read before timeout.")
         except (OSError, ValueError) as e:
             self.logger.error("[%s] Error reading data: %s" % (self.device['serial_number'], e))
-        self.ups.close()
 
     async def read_data(self, length):
         """ Read a block of data from the UPS """
         from asyncio import to_thread
         self.logger.debug("[%s] Creating thread to read data.", self.device['serial_number'])
-        with self.listening:
-            data = await to_thread(self._read_data, length)
+        data = await to_thread(self._read_data, length)
         if data is None:
             raise ValueError("[%s] Unable to read data." % self.device['serial_number'])
         return data
