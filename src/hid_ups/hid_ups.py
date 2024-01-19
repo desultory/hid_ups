@@ -33,7 +33,7 @@ class HIDUPS(ClassLogger):
         try:
             self.ups.open_path(self.device['path'])
         except OSError as e:
-            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e))
+            self.logger.traceback("[%s] Error opening device: %s" % (self.device['serial_number'], e))
             sleep(5)
             self.update_device()
 
@@ -81,7 +81,7 @@ class HIDUPS(ClassLogger):
             else:
                 self.logger.log(5, "No data read before timeout.")
         except (OSError, ValueError) as e:
-            self.logger.error("Error reading data: %s" % e)
+            self.logger.error("[%s] Error reading data: %s" % (self.device['serial_number'], e))
             if isinstance(e, ValueError):
                 sleep(5)
             self.update_device()
