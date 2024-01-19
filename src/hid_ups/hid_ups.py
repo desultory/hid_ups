@@ -45,6 +45,7 @@ class HIDUPS(ClassLogger):
         self.ups.close()
 
     def _clear_data(self):
+        self.logger.debug("[%s] Clearing data." % self.device['serial_number'])
         for param in self.PARAMS:
             setattr(self, param, None)
 
