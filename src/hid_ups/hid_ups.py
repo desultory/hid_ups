@@ -67,14 +67,21 @@ class HIDUPS(ClassLogger):
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
             sleep(5)
 
+    def _read_data(self, length):
+        """ Read a block of data from the UPS """
+        try:
+            if data := self.ups.read(length):
+                self.logger.debug("Read %s bytes: %s", length, data)
+                return data
+            else:
+                self.logger.log(5, "No data read before timeout.")
+        except OSError as e:
+            self.logger.error("Error reading data: %s" % e)
+
     async def read_data(self, length):
         """ Read a block of data from the UPS """
         from asyncio import to_thread
-        if data := await to_thread(self.ups.read, length):
-            self.logger.debug("Read %s bytes: %s", length, data)
-            return data
-        else:
-            self.logger.log(5, "No data read before timeout.")
+        return await to_thread(self._read_data, length)
 
     def process_data(self, data):
         """ Process data using the process_<type> methods """
