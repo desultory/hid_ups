@@ -30,7 +30,12 @@ class HIDUPS(ClassLogger):
     def open_device(self):
         """ Open the device """
         self.ups.close()
-        self.ups.open_path(self.device['path'])
+        try:
+            self.ups.open_path(self.device['path'])
+        except OSError as e:
+            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e))
+            sleep(5)
+            self.update_device()
 
     def close(self):
         """ Close the device """
