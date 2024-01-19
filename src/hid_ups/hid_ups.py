@@ -59,6 +59,7 @@ class HIDUPS(ClassLogger):
         while self.running.is_set():
             await self.read_and_process_data()
         self.ups.close()
+        self.logger.info("[%s] Main loop stopped." % self.device['serial_number'])
 
     async def read_and_process_data(self):
         """ Read data from the UPS and process it """
