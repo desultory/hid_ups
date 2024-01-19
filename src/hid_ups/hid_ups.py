@@ -80,7 +80,7 @@ class HIDUPS(ClassLogger):
                 self.fail_count += 1
                 self._clear_data()
                 await sleep(5)
-                self.update_device()
+                await self.update_device()
         self.current_item = 0
         self.logger.info(self)
 
