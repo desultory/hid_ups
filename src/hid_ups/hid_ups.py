@@ -44,6 +44,10 @@ class HIDUPS(ClassLogger):
         self.running.clear()
         self.ups.close()
 
+    def _clear_data(self):
+        for param in self.PARAMS:
+            setattr(self, param, None)
+
     async def mainloop(self):
         """ Main loop """
         self.running.set()
@@ -59,6 +63,7 @@ class HIDUPS(ClassLogger):
                     self.process_data(data)
             except (OSError, ValueError) as e:
                 self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
+                self._clear_data()
                 sleep(5)
                 self.update_device()
         self.current_item = 0
