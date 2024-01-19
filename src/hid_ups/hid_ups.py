@@ -38,7 +38,12 @@ class HIDUPS(ClassLogger):
         except (OSError, RuntimeError) as e:
             self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e))
 
+        # Ensure this message is logged
+        level = self.logger.level
+        if self.logger.level < 20:
+            self.logger.setLevel(20)
         self.logger.info("[%s] Opened device." % self.device['serial_number'])
+        self.logger.setLevel(level)
 
     def close(self):
         """ Close the device """
