@@ -1,6 +1,6 @@
 from zenlib.logging import ClassLogger
 from threading import Semaphore
-from time import sleep
+from asyncio import sleep
 
 
 class HIDUPS(ClassLogger):
@@ -79,12 +79,12 @@ class HIDUPS(ClassLogger):
                     self.running.release()
                 self.fail_count += 1
                 self._clear_data()
-                sleep(5)
+                await sleep(5)
                 self.update_device()
         self.current_item = 0
         self.logger.info(self)
 
-    def update_device(self):
+    async def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
         if hasattr(self, 'ups'):
@@ -93,10 +93,14 @@ class HIDUPS(ClassLogger):
         if path := get_hid_path_from_serial(self.device['serial_number']):
             self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
             self.device['path'] = path
-            self.open_device()
+            try:
+                self.open_device()
+            except OSError as e:
+                self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e), exc_info=True)
+                await sleep(2)
         else:
             self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
-            sleep(5)
+            await sleep(5)
 
     def _read_data(self, length):
         """ Read a block of data from the UPS """
