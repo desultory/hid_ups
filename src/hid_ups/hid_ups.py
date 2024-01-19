@@ -1,5 +1,5 @@
 from zenlib.logging import ClassLogger
-from threading import Event
+from threading import Event, Lock
 from time import sleep
 
 
@@ -22,6 +22,7 @@ class HIDUPS(ClassLogger):
         self.run_forever = run_forever
         self.device = device_data
         self.running = Event()
+        self.listening = Lock()
 
         for param in self.PARAMS:
             setattr(self, param, kwargs.pop(param, None))
@@ -51,7 +52,8 @@ class HIDUPS(ClassLogger):
         self.running.set()
         self.logger.info("[%s] Starting main loop." % self.device['serial_number'])
         while self.running.is_set():
-            await self.read_and_process_data()
+            async with self.listening:
+                await self.read_and_process_data()
         self.ups.close()
 
     async def read_and_process_data(self):
@@ -77,16 +79,17 @@ class HIDUPS(ClassLogger):
     def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
-        if hasattr(self, 'ups'):
-            self.logger.info("[%s] Closing device." % self.device['serial_number'])
-            self.ups.close()
-        if path := get_hid_path_from_serial(self.device['serial_number']):
-            self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
-            self.device['path'] = path
-            self.open_device()
-        else:
-            self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
-            sleep(5)
+        with self.listening:
+            if hasattr(self, 'ups'):
+                self.logger.info("[%s] Closing device." % self.device['serial_number'])
+                self.ups.close()
+            if path := get_hid_path_from_serial(self.device['serial_number']):
+                self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
+                self.device['path'] = path
+                self.open_device()
+            else:
+                self.logger.warning("Could not find device path for serial: %s" % self.device['serial_number'])
+                sleep(5)
 
     def _read_data(self, length):
         """ Read a block of data from the UPS """
