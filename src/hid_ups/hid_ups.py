@@ -79,10 +79,10 @@ class HIDUPS(ClassLogger):
     def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
+        if hasattr(self, 'ups'):
+            self.logger.info("[%s] Closing device." % self.device['serial_number'])
+            self.ups.close()
         with self.listening:
-            if hasattr(self, 'ups'):
-                self.logger.info("[%s] Closing device." % self.device['serial_number'])
-                self.ups.close()
             if path := get_hid_path_from_serial(self.device['serial_number']):
                 self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
                 self.device['path'] = path
