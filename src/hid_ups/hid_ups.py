@@ -33,7 +33,7 @@ class HIDUPS(ClassLogger):
         try:
             self.ups.open_path(self.device['path'])
         except OSError as e:
-            self.logger.traceback("[%s] Error opening device: %s" % (self.device['serial_number'], e))
+            self.logger.error("[%s] Error opening device: %s" % (self.device['serial_number'], e), exc_info=e)
             sleep(5)
             self.update_device()
 
