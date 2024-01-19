@@ -49,7 +49,7 @@ class HIDUPS(ClassLogger):
             try:
                 if data := await self.read_data(64):
                     self.process_data(data)
-            except (OSError, ValueError) as e:
+            except OSError as e:
                 self.logger.error("[%s] Error reading data: %s" % (self.device['serial_number'], e))
                 self.update_device()
         self.current_item = 0
@@ -58,7 +58,6 @@ class HIDUPS(ClassLogger):
     def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
-        self.ups.close()
         if path := get_hid_path_from_serial(self.device['serial_number']):
             self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
             self.device['path'] = path
@@ -76,8 +75,9 @@ class HIDUPS(ClassLogger):
                 return data
             else:
                 self.logger.log(5, "No data read before timeout.")
-        except OSError as e:
+        except (OSError, ValueError) as e:
             self.logger.error("Error reading data: %s" % e)
+            self.update_device()
 
     async def read_data(self, length):
         """ Read a block of data from the UPS """
