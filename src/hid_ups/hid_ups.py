@@ -62,12 +62,12 @@ class HIDUPS(ClassLogger):
                     self.fail_count = 0
             except (OSError, ValueError) as e:
                 self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
-                if not self.run_forever and self.fail_count > self.max_fails:
+                self.logger.info("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
+                if not self.run_forever and self.fail_count >= self.max_fails:
                     self.logger.critical("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
                     self.running.clear()
                     del self.ups
                 self.fail_count += 1
-                self.logger.info("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
                 self._clear_data()
                 sleep(5)
                 self.update_device()
@@ -77,6 +77,9 @@ class HIDUPS(ClassLogger):
     def update_device(self):
         """ Updates the device path based on the serial """
         from .hid_devices import get_hid_path_from_serial
+        if hasattr(self, 'ups'):
+            self.logger.info("[%s] Closing device." % self.device['serial_number'])
+            self.ups.close()
         if path := get_hid_path_from_serial(self.device['serial_number']):
             self.logger.info("[%s] Updating device path: %s" % (self.device['serial_number'], path))
             self.device['path'] = path
