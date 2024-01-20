@@ -9,6 +9,7 @@ def get_hid_devices():
     for device in hid_enumerate():
         vendor_id = device['vendor_id']
         product_id = device['product_id']
+        device.close()  # Close the device after getting data, it will be reopened later
         if vendor_id in HID_DEVICES and product_id in HID_DEVICES[vendor_id]:
             yield device, HID_DEVICES[vendor_id][product_id]
 
