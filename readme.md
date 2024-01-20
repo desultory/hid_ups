@@ -16,6 +16,10 @@ This package can be installed with `sudo pip install --break .` then run with `s
 
 Once started, `hid_ups` will attempt to find UPS devices and listen for stats.
 
+A `SIGHUP` can be sent to the process to re-scan for devices.
+
+> This will close current listeners, and will momentarily throw errors until the socket is re-opened
+
 ## Device detection
 
 `hid_ups` detects the device using vendor/device strings. Only one is currently added. The are defined in [hid_devices](src/hid_ups/hid_devices.py)
