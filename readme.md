@@ -14,6 +14,8 @@ This must be run as root unless the user has privileges to use the `hidraw` sock
 
 This package can be installed with `sudo pip install --break .` then run with `sudo hid_ups`.
 
+Once started, `hid_ups` will attempt to find UPS devices and listen for stats.
+
 ## Device detection
 
 `hid_ups` detects the device using vendor/device strings. Only one is currently added. The are defined in [hid_devices](src/hid_ups/hid_devices.py)
