@@ -73,7 +73,7 @@ class HIDUPS(ClassLogger):
                     self.fail_count = 0
             except (OSError, ValueError) as e:
                 self.logger.error("[%s] Error processing data: %s" % (self.device['serial_number'], e))
-                self.logger.info("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
+                self.logger.warning("[%s] Fail count: %s" % (self.device['serial_number'], self.fail_count))
                 if not self.run_forever and self.fail_count >= self.max_fails:
                     self.logger.critical("[%s] Too many errors, stopping UPS listener." % self.device['serial_number'])
                     self.running.release()

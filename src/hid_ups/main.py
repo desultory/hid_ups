@@ -1,17 +1,17 @@
 #! /usr/bin/env python3
 
 from hid_ups import HIDUPS
-from zenlib.util import get_args_n_logger
+from zenlib.util import get_kwargs
 from asyncio import gather, get_event_loop
 
 
 def main():
-    args, logger = get_args_n_logger(package=__package__, description='HID based UPS reader')
+    kwargs = get_kwargs(package=__package__, description='HID based UPS reader')
 
-    ups_list = [dev for dev in HIDUPS.get_UPSs(logger=logger)]
+    ups_list = [dev for dev in HIDUPS.get_UPSs(**kwargs)]
 
     if not ups_list:
-        logger.error('No UPS found')
+        raise SystemExit('No UPS found')
         return
 
     mainloop = get_event_loop()
@@ -24,7 +24,8 @@ def main():
             task.cancel()
     finally:
         mainloop.close()
-        logger.info('Main loop closed')
+
+    print("Exiting...")
 
 
 if '__main__' == __name__:
